@@ -1,0 +1,205 @@
+<html>
+<head>
+	<title id='title'>Download sif cards from schoolido.lu</title>
+	<script src='https://cdnjs.cloudflare.com/ajax/libs/jszip/3.5.0/jszip.min.js'></script>
+	<script src='http://localhost:8887/data/html-editor/FileSaver.js'></script>
+</head>
+<body>
+	<button id='buttno' onclick='downloadImages()'>Download</button>
+	<br><br><br>
+	<p id='counting'></p>
+	<br>
+	<p id='scanPrc'></p>
+	<br><br>
+	<ul id='cards'></ul>
+	<script>
+	function downloadImages(name) {
+		var totalCards = 2816
+		this.amountDone = 0
+		var chars = [
+					 {
+						"name": "idolizedEli"
+					 },
+					 {
+						"name": "Eli"
+					 },
+					 {
+						"name": "idolizedHanayo"
+					 },
+					 {
+						"name": "Hanayo"
+					 },
+					 {
+						"name": "idolizedHonoka"
+					 },
+					 {
+						"name": "Honoka"
+					 },
+					 {
+						"name": "idolizedKotori"
+					 },
+					 {
+						"name": "Kotori"
+					 },
+					 {
+						"name": "idolizedMaki"
+					 },
+					 {
+						"name": "Maki"
+					 },
+					 {
+						"name": "idolizedNico"
+					 },
+					 {
+						"name": "Nico"
+					 },
+					 {
+						"name": "idolizedNozomi"
+					 },
+					 {
+						"name": "Nozomi"
+					 },
+					 {
+						"name": "idolizedRin"
+					 },
+					 {
+						"name": "Rin"
+					 },
+					 {
+						"name": "idolizedUmi"
+					 },
+					 {
+						"name": "Umi"
+					 },
+					 {
+						"name": "idolizedChika"
+					 },
+					 {
+						"name": "Chika"
+					 },
+					 {
+						"name": "idolizedHanamaru"
+					 },
+					 {
+						"name": "Hanamaru"
+					 },
+					 {
+						"name": "idolizedDia"
+					 },
+					 {
+						"name": "Dia"
+					 },
+					 {
+						"name": "idolizedKanan"
+					 },
+					 {
+						"name": "Kanan"
+					 },
+					 {
+						"name": "idolizedMari"
+					 },
+					 {
+						"name": "Mari"
+					 },
+					 {
+						"name": "idolizedRiko"
+					 },
+					 {
+						"name": "Riko"
+					 },
+					 {
+						"name": "idolizedRuby"
+					 },
+					 {
+						"name": "Ruby"
+					 },
+					 {
+						"name": "idolizedYoshiko"
+					 },
+					 {
+						"name": "Yoshiko"
+					 },
+					 {
+						"name": "idolizedYou"
+					 },
+					 {
+						"name": "You"
+					 }
+					]
+			// need to add Nijigasaki
+			
+		var zip = new JSZip()
+		document.getElementById('buttno').remove()
+		var cardList = document.getElementById('cards')
+		var counting = document.getElementById('counting')
+		var scanPrc = document.getElementById('scanPrc')
+		var title = document.getElementById('title')
+		console.clear()
+		while (document.getElementById('cards').firstChild) {
+			document.getElementById('cards').removeChild(document.getElementById('cards').firstChild);
+		}
+		function finished() {
+			if (this.amountDone == chars.length) {
+				alert('Downloading finished. Total of '+this.o+' cards')
+				var p = document.createElement('li')
+				var blob = new Blob([JSON.stringify(this.cards)], {type : 'application/json'})
+				p.innerHTML = '<a href="'+URL.createObjectURL(blob)+'" target="_blank">card list</a>'
+				cardList.appendChild(p)
+				scanPrc.innerHTML = 'Generating Zip'
+				zip.generateAsync({type:"blob"}).then(function(content) {
+					saveAs(content, "Anime Cards.zip");
+					scanPrc.innerHTML = 'zip file downloaded'
+				})
+			}
+		}
+		function Download(name, t) {
+				var i=0
+				function checkSend() {
+					fetch('https://i.schoolido.lu/c/'+i+name+'.png').then(response => {
+						if (response.status == 200) {
+							response.blob().then(blob => {
+								var p = document.createElement('li')
+								p.innerHTML = '<a href="'+URL.createObjectURL(blob)+'" target="_blank">'+i+name+'.png</a>'
+								cardList.appendChild(p)
+								this.cards[name].push(i)
+								t.file(i+name+'.png', blob);
+								if (i != totalCards) {
+									i++
+									checkSend()
+								} else {
+									this.amountDone++
+									finished()
+								}
+							})
+							this.o++
+							counting.innerHTML = 'Amount Downloaded: '+this.o
+						} else {
+							if (i != totalCards) {
+								i++
+								checkSend()
+							} else {
+								this.amountDone++
+								finished()
+							}
+						}
+					})
+				}
+				i++
+				checkSend()
+		}
+		this.cards = { }
+		this.o = 0
+		for (var t=0; t<chars.length; t++) {
+			this.cards[chars[t].name] = [ ]
+			if (chars[t].name.substring(0, 8) == 'idolized') {
+				var a = chars[t].name.substring(8, chars[t].name.length)
+			} else {
+				var a = chars[t].name
+			}
+			var folder = zip.folder(a)
+			Download(chars[t].name, folder)
+		}
+	}
+	</script>
+</body>
+</html>
