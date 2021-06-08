@@ -16,7 +16,6 @@
 		<p>End At</p><input id="totalCards" type='number' value='2816'><br><br>
 		<input type="checkbox" id="developer" name="developer" value="developer">
 		<label for="developer">Developer Mode</label><br>
-		<p>Name of zip file</p><input id="zipName" type='text' value='Love Live Anime Cards'>
 	</div>
 	<br><br>
 	<ul id='cards'></ul>
@@ -188,11 +187,6 @@
 				}
 				scanPrc.innerHTML = 'Generating Zip'
 				window.zip.generateAsync({type:"blob"}).then(function(content) {
-					var name = document.getElementById('zipName').value
-					if (!name || name == '') {
-						name = 'Love Live Anime Cards'
-					}
-					console.log('a')
 					saveAs(content, "Anime Cards.zip")
 					scanPrc.innerHTML = 'zip file downloaded'
 				})
