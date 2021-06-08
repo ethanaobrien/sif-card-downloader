@@ -171,13 +171,14 @@
 		}
 		function finished() {
 			this.amountDone++
+			console.clear()
 			if (document.getElementById('developer').checked) {
 				var p = document.createElement('li')
 				p.innerHTML = 'Finished'
 				cardList.appendChild(p)
 			}
 			console.log(this.amountDone)
-			if (this.o == 3708 || this.amountDone == 36) {
+			if (this.amountDone == 36) {
 				alert('Downloading finished. Total of '+this.o+' cards')
 				if (document.getElementById('developer').checked) {
 					var p = document.createElement('li')
