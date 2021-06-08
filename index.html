@@ -159,7 +159,7 @@
 			// need to add Nijigasaki
 		//console.log(chars.length)
 		//return
-		var zip = new JSZip()
+		window.zip = new JSZip()
 		document.getElementById('settings').style = 'display:none'
 		document.getElementById('buttno').remove()
 		var cardList = document.getElementById('cards')
@@ -187,13 +187,13 @@
 					cardList.appendChild(p)
 				}
 				scanPrc.innerHTML = 'Generating Zip'
-				zip.generateAsync({type:"blob"}).then(function(content) {
+				window.zip.generateAsync({type:"blob"}).then(function(content) {
 					var name = document.getElementById('zipName').value
 					if (!name || name == '') {
 						name = 'Love Live Anime Cards'
 					}
 					console.log('a')
-					saveAs(content, name+".zip")
+					saveAs(content, "Anime Cards.zip")
 					scanPrc.innerHTML = 'zip file downloaded'
 				})
 			}
@@ -255,7 +255,7 @@
 			} else {
 				var a = chars[t].name
 			}
-			var folder = zip.folder(a)
+			var folder = window.zip.folder(a)
 			Download(chars[t].name, folder)
 		}
 	}
