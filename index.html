@@ -68,118 +68,62 @@
 			var totalCards = document.getElementById('totalCards').value
 		}
 		var chars = [
-					 {
-						"name": "idolizedEli"
-					 },
-					 {
-						"name": "Eli"
-					 },
-					 {
-						"name": "idolizedHanayo"
-					 },
-					 {
-						"name": "Hanayo"
-					 },
-					 {
-						"name": "idolizedHonoka"
-					 },
-					 {
-						"name": "Honoka"
-					 },
-					 {
-						"name": "idolizedKotori"
-					 },
-					 {
-						"name": "Kotori"
-					 },
-					 {
-						"name": "idolizedMaki"
-					 },
-					 {
-						"name": "Maki"
-					 },
-					 {
-						"name": "idolizedNico"
-					 },
-					 {
-						"name": "Nico"
-					 },
-					 {
-						"name": "idolizedNozomi"
-					 },
-					 {
-						"name": "Nozomi"
-					 },
-					 {
-						"name": "idolizedRin"
-					 },
-					 {
-						"name": "Rin"
-					 },
-					 {
-						"name": "idolizedUmi"
-					 },
-					 {
-						"name": "Umi"
-					 },
-					 {
-						"name": "idolizedChika"
-					 },
-					 {
-						"name": "Chika"
-					 },
-					 {
-						"name": "idolizedHanamaru"
-					 },
-					 {
-						"name": "Hanamaru"
-					 },
-					 {
-						"name": "idolizedDia"
-					 },
-					 {
-						"name": "Dia"
-					 },
-					 {
-						"name": "idolizedKanan"
-					 },
-					 {
-						"name": "Kanan"
-					 },
-					 {
-						"name": "idolizedMari"
-					 },
-					 {
-						"name": "Mari"
-					 },
-					 {
-						"name": "idolizedRiko"
-					 },
-					 {
-						"name": "Riko"
-					 },
-					 {
-						"name": "idolizedRuby"
-					 },
-					 {
-						"name": "Ruby"
-					 },
-					 {
-						"name": "idolizedYoshiko"
-					 },
-					 {
-						"name": "Yoshiko"
-					 },
-					 {
-						"name": "idolizedYou"
-					 },
-					 {
-						"name": "You"
-					 }
+						"idolizedEli",
+						"Eli",
+						"idolizedHanayo",
+						"Hanayo",
+						"idolizedHonoka",
+						"Honoka",
+						"idolizedKotori",
+						"Kotori",
+						"idolizedMaki",
+						"Maki",
+						"idolizedNico",
+						"Nico",
+						"idolizedNozomi",
+						"Nozomi",
+						"idolizedRin",
+						"Rin",
+						"idolizedUmi",
+						"Umi",
+						"idolizedChika",
+						"Chika",
+						"idolizedHanamaru",
+						"Hanamaru",
+						"idolizedDia",
+						"Dia",
+						"nidolizedKanan",
+						"Kanan",
+						"idolizedMari",
+						"Mari",
+						"idolizedRiko",
+						"Riko",
+						"idolizedRuby",
+						"Ruby",
+						"idolizedYoshiko",
+						"Yoshiko",
+						"idolizedYou",
+						"You",
+						"idolizedAi",
+						"Ai",
+						"idolizedAyumu",
+						"Ayumu",
+						"idolizedEmma",
+						"Emma",
+						"idolizedKanata",
+						"Kanata",
+						"idolizedKarin",
+						"Karin",
+						"idolizedKasumi",
+						"Kasumi",
+						"idolizedRina",
+						"Rina",
+						"idolizedSetsuna",
+						"Setsuna",
+						"idolizedShizuku",
+						"Shizuku"
 					]
 			// need to add Nijigasaki
-		//console.log(chars.length)
-		//return
 		var m = new JSZip()
 		window.zip = m
 		var cardList = document.getElementById('cards')
@@ -251,14 +195,14 @@
 		this.finished = 0
 		this.amountDone = 0
 		for (var t=0; t<chars.length; t++) {
-			this.cards[chars[t].name] = [ ]
-			if (chars[t].name.substring(0, 8) == 'idolized') {
-				var a = chars[t].name.substring(8, chars[t].name.length)
+			this.cards[chars[t]] = [ ]
+			if (chars[t].substring(0, 8) == 'idolized') {
+				var a = chars[t].substring(8, chars[t].name.length)
 			} else {
-				var a = chars[t].name
+				var a = chars[t]
 			}
 			var folder = zip.folder(a)
-			Download(chars[t].name, folder)
+			Download(chars[t], folder)
 		}
 	}
 	</script>
