@@ -13,13 +13,20 @@
 	<br>
 	<div id='settings'>
 		<p>Start at </p><input id="startAt" type='number' value='1'>
-		<p>End At</p><input id="totalCards" type='number' value='2816'><br><br>
+		<p>End At</p><input id="totalCards" type='number' value='2817'><br><br>
 		<input type="checkbox" id="developer" name="developer" value="developer">
 		<label for="developer">Developer Mode</label><br>
+		<input type="checkbox" id="deepScan" name="deepScan" value="deepScan">
+		<label for="deepScan">Don't use list of known cards (Not recommended)</label><br>
 	</div>
+	<button onclick='zipFile()' id='zippFilee' style='display:none'>Stop Downloading and zip</button>
 	<br><br>
 	<ul id='cards'></ul>
 	<script>
+		var cardList = document.getElementById('cards')
+		var counting = document.getElementById('counting')
+		var scanPrc = document.getElementById('scanPrc')
+		var title = document.getElementById('title')
 		fetch('knownCards.json').then( function(response) {
 			if (response.status == 200) {
 				response.blob().then( function(blob){
@@ -39,9 +46,23 @@
 				})
 			}
 		})
+		function zipFile() {
+			window.download = false
+			if (document.getElementById('developer').checked) {
+				var p = document.createElement('li')
+				var blob = new Blob([JSON.stringify(this.cards)], {type : 'application/json'})
+				p.innerHTML = '<a href="'+URL.createObjectURL(blob)+'" target="_blank">card list</a>'
+				cardList.appendChild(p)
+			}
+			scanPrc.innerHTML = 'Generating Zip'
+			zip.generateAsync({type:"blob"}).then(function(content) {
+				saveAs(content, "Anime Cards.zip")
+				scanPrc.innerHTML = 'zip file downloaded'
+			})	
+		}
 	function downloadImages(name) {
 		var knownCards = window.knownCards
-		var totalCards = 2816
+		var totalCards = 2817
 		if (document.getElementById('totalCards').value && document.getElementById('totalCards').value != '') {
 			var totalCards = document.getElementById('totalCards').value
 		}
@@ -158,40 +179,17 @@
 			// need to add Nijigasaki
 		//console.log(chars.length)
 		//return
-		var zip = new JSZip()
-		document.getElementById('settings').style = 'display:none'
-		document.getElementById('buttno').remove()
+		var m = new JSZip()
+		window.zip = m
 		var cardList = document.getElementById('cards')
 		var counting = document.getElementById('counting')
 		var scanPrc = document.getElementById('scanPrc')
 		var title = document.getElementById('title')
-		console.clear()
+		document.getElementById('settings').style = 'display:none'
+		document.getElementById('zippFilee').style = 'display:block'
+		document.getElementById('buttno').remove()
 		while (document.getElementById('cards').firstChild) {
 			document.getElementById('cards').removeChild(document.getElementById('cards').firstChild);
-		}
-		function finished() {
-			this.amountDone++
-			console.clear()
-			if (document.getElementById('developer').checked) {
-				var p = document.createElement('li')
-				p.innerHTML = 'Finished'
-				cardList.appendChild(p)
-			}
-			console.log(this.amountDone)
-			if (this.amountDone == 36) {
-				alert('Downloading finished. Total of '+this.o+' cards')
-				if (document.getElementById('developer').checked) {
-					var p = document.createElement('li')
-					var blob = new Blob([JSON.stringify(this.cards)], {type : 'application/json'})
-					p.innerHTML = '<a href="'+URL.createObjectURL(blob)+'" target="_blank">card list</a>'
-					cardList.appendChild(p)
-				}
-				scanPrc.innerHTML = 'Generating Zip'
-				zip.generateAsync({type:"blob"}).then(function(content) {
-					saveAs(content, "Anime Cards.zip")
-					scanPrc.innerHTML = 'zip file downloaded'
-				})
-			}
 		}
 		function Download(name, t) {
 				var i=0
@@ -199,7 +197,10 @@
 					var i = document.getElementById('startAt').value
 				}
 				function checkSend() {
-					if (knownCards[name].includes(i)) {
+					if (! download) {
+						return
+					}
+					if (knownCards[name].includes(i) || document.getElementById('deepScan').checked) {
 						fetch('https://i.schoolido.lu/c/'+i+name+'.png').then(response => {
 							if (response.status == 200) {
 								response.blob().then(blob => {
@@ -212,7 +213,8 @@
 										i++
 										checkSend()
 									} else {
-										finished()
+										this.finished++
+										scanPrc.innerHTML = this.finished+'/'+this.chars.length+' downloaded. Once everything is completed, click the zip button'
 									}
 								})
 								this.o++
@@ -223,7 +225,8 @@
 									i++
 									checkSend()
 								} else {
-									finished()
+									this.finished++
+									scanPrc.innerHTML = this.finished+'/'+this.chars.length+' downloaded. Once everything is completed, click the zip button'
 								}
 							}
 						})
@@ -232,7 +235,8 @@
 							i++
 							checkSend()
 						} else {
-							finished()
+							this.finished++
+							scanPrc.innerHTML = this.finished+'/'+this.chars.length+' downloaded. Once everything is completed, click the zip button'
 						}
 					}
 				}
@@ -242,6 +246,8 @@
 		this.cards = { }
 		this.chars = chars
 		this.o = 0
+		window.download = true
+		this.finished = 0
 		this.amountDone = 0
 		for (var t=0; t<chars.length; t++) {
 			this.cards[chars[t].name] = [ ]
