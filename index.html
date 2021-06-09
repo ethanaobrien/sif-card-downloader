@@ -56,11 +56,11 @@
 				cardList.appendChild(p)
 			}
 			scanPrc.innerHTML = 'Generating Zip'
-			zip.generateAsync({type:"blob", comment: "Downloaded with https://ethanaobrien.github.io/sif-card-downloader/index.html"}, function updateCallback(metadata) {
+			zip.generateAsync({type:"blob"}, function updateCallback(metadata) {
 				scanPrc.innerHTML = "Zipping File: " + metadata.percent.toFixed(2) + " %"
 			}).then(function(content) {
 				saveAs(content, "Anime Cards.zip")
-				scanPrc.innerHTML = 'zip file downloaded - DO NOT CLOSE THIS PAGE until the download completes or you will need to repeat this entire process'
+				scanPrc.innerHTML = 'zip file downloaded'
 			})
 		}
 	function downloadImages(name) {
