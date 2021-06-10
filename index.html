@@ -13,9 +13,9 @@
 	<br>
 	<div id='settings'>
         <input type="checkbox" id="downloadAll" name="downloadAll" value="downloadAll" onchange='cardsVisibility()'>
-        <label for="downloadAll">Download All</label><br>
-        <div id='downloadSelect' style='display:none'>
-            <div id='Muse'>
+        <label for="downloadAll">Download All</label><br><br>
+        <div id='downloadSelect' style='display:none;'>
+            <div id='Muse' style="float:left; width:25%;">
                 <input type="checkbox" id="Honoka" name="Honoka" value="Honoka">
                 <label for="Honoka">Honoka Kosaka</label><br>
                 <input type="checkbox" id="Eli" name="Eli" value="Eli">
@@ -34,8 +34,9 @@
                 <label for="Hanayo">Hanayo Koizumi</label><br>
                 <input type="checkbox" id="Nico" name="Nico" value="Nico">
                 <label for="Nico">Nico Yazawa</label><br>
+				<br>
             </div>
-            <div id='Aqours'>
+            <div id='Aqours' style="float:left; width:25%;">
                 <input type="checkbox" id="Chika" name="Chika" value="Chika">
                 <label for="Chika">Chika Takami</label><br>
                 <input type="checkbox" id="Riko" name="Riko" value="Riko">
@@ -54,8 +55,9 @@
                 <label for="Mari">Mari Ohara</label><br>
                 <input type="checkbox" id="Ruby" name="Ruby" value="Ruby">
                 <label for="Ruby">Ruby Kurosawa</label><br>
+				<br>
             </div>
-            <div id='Nijigasaki'>
+            <div id='Nijigasaki' style="float:left; width:25%;">
                 <input type="checkbox" id="Ayumu" name="Ayumu" value="Ayumu">
                 <label for="Ayumu">Ayumu Uehara</label><br>
                 <input type="checkbox" id="Kasumi" name="Kasumi" value="Kasumi">
@@ -74,7 +76,11 @@
                 <label for="Emma">Emma Verde</label><br>
                 <input type="checkbox" id="Rina" name="Rina" value="Rina">
                 <label for="Rina">Rina Tennoji</label><br>
+				<br>
             </div>
+			<div id='whitespace' style="width:25%;">
+				<br><br><br><br><br><br><br><br><br><br>
+			</div>
         </div>
         <br><br>
 		<p>Start at </p><input id="startAt" type='number' value='0'>
@@ -119,9 +125,9 @@
             var cardsDiv = document.getElementById('downloadSelect')
             var downloadAll = document.getElementById('downloadAll')
             if (downloadAll.checked) {
-                cardsDiv.style = 'display:none'
+                cardsDiv.style = 'display:none;'
             } else {
-                cardsDiv.style = 'display:block'
+                cardsDiv.style = 'display:block; width:100%'
             }
         }
 		function zipFile() {
@@ -141,7 +147,7 @@
 				scanPrc.innerHTML = 'zip file downloaded'
 			})
 		}
-	function downloadImages(name) {
+	function downloadImages() {
 		var totalCards = 2817
 		if (document.getElementById('totalCards').value && document.getElementById('totalCards').value != '') {
 			var totalCards = document.getElementById('totalCards').value
@@ -297,7 +303,7 @@
 			}
             if (document.getElementById(idolName).checked || document.getElementById("downloadAll").checked) {
                 downloadSuccess = true
-				if (document.getElementById('downloadZip').checked)
+				if (document.getElementById('downloadZip').checked) {
 					var groupFolder = zip.folder(chars[t][1])
 					var folder = groupFolder.folder(idolName)
 				} else {
@@ -314,6 +320,25 @@
             window.location.reload
         }
 	}
+	function setscreensize() {
+		var width = window.innerWidth
+		var height = window.innerHeight
+		if (width < 550) {
+			var style = ''
+			document.getElementById('Nijigasaki').style = style
+			document.getElementById('Muse').style = style
+			document.getElementById('Aqours').style = style
+			document.getElementById('whitespace').style = 'display:none'
+		} else {
+			var style = 'float:left; width:25%;'
+			document.getElementById('Nijigasaki').style = style
+			document.getElementById('Muse').style = style
+			document.getElementById('Aqours').style = style
+			document.getElementById('whitespace').style = 'display:block; width:25%;'
+		}
+	}
+	window.onload = setscreensize()
+	window.onresize = setscreensize
 	</script>
 </body>
 </html>
