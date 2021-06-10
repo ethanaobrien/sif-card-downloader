@@ -18,11 +18,76 @@
 		<label for="developer">Developer Mode</label><br>
 		<input type="checkbox" id="deepScan" name="deepScan" value="deepScan">
 		<label for="deepScan">Don't use list of known cards (Not recommended)</label><br>
+        <div id='downloadSelect' style='display:none'>
+            <div id='Muse'>
+                <input type="checkbox" id="Honoka" name="Honoka" value="Honoka">
+                <label for="Honoka">Honoka Kosaka</label><br>
+                <input type="checkbox" id="Eli" name="Eli" value="Eli">
+                <label for="Eli">Eli Ayase</label><br>
+                <input type="checkbox" id="Kotori" name="Kotori" value="Kotori">
+                <label for="Kotori">Kotori Minami</label><br>
+                <input type="checkbox" id="Umi" name="Umi" value="Umi">
+                <label for="Umi">Umi Sonoda</label><br>
+                <input type="checkbox" id="Rin" name="Rin" value="Rin">
+                <label for="Rin">Rin Hoshizora</label><br>
+                <input type="checkbox" id="Maki" name="Maki" value="Maki">
+                <label for="Maki">Maki Nishikino</label><br>
+                <input type="checkbox" id="Nozomi" name="Nozomi" value="Nozomi">
+                <label for="Nozomi">Nozomi Tojo</label><br>
+                <input type="checkbox" id="Hanayo" name="Hanayo" value="Hanayo">
+                <label for="Hanayo">Hanayo Koizumi</label><br>
+                <input type="checkbox" id="Nico" name="Nico" value="Nico">
+                <label for="Nico">Nico Yazawa</label><br>
+            </div>
+            <div id='Aqours'>
+                <input type="checkbox" id="Chika" name="Chika" value="Chika">
+                <label for="Chika">Chika Takami</label><br>
+                <input type="checkbox" id="Riko" name="Riko" value="Riko">
+                <label for="Riko">Riko Sakurauchi</label><br>
+                <input type="checkbox" id="Kanan" name="Kanan" value="Kanan">
+                <label for="Kanan">Kanan Matsuura</label><br>
+                <input type="checkbox" id="Dia" name="Dia" value="Dia">
+                <label for="Dia">Dia Kurosawa</label><br>
+                <input type="checkbox" id="You" name="You" value="You">
+                <label for="You">You Watanabe</label><br>
+                <input type="checkbox" id="Yoshiko" name="Yoshiko" value="Yoshiko">
+                <label for="Yoshiko">Yoshiko Tsushima</label><br>
+                <input type="checkbox" id="Hanamaru" name="Hanamaru" value="Hanamaru">
+                <label for="Hanamaru">Hanamaru Kunikida</label><br>
+                <input type="checkbox" id="Mari" name="Mari" value="Mari">
+                <label for="Mari">Mari Ohara</label><br>
+                <input type="checkbox" id="Ruby" name="Ruby" value="Ruby">
+                <label for="Ruby">Ruby Kurosawa</label><br>
+            </div>
+            <div id='Nijigasaki'>
+                <input type="checkbox" id="Ayumu" name="Ayumu" value="Ayumu">
+                <label for="Ayumu">Ayumu Uehara</label><br>
+                <input type="checkbox" id="Kasumi" name="Kasumi" value="Kasumi">
+                <label for="Kasumi">Kasumi Nakasu</label><br>
+                <input type="checkbox" id="Shizuku" name="Shizuku" value="Shizuku">
+                <label for="Shizuku">Shizuku Osaka</label><br>
+                <input type="checkbox" id="Karin" name="Karin" value="Karin">
+                <label for="Karin">Karin Asaka</label><br>
+                <input type="checkbox" id="Ai" name="Ai" value="Ai">
+                <label for="Ai">Ai Miyashita</label><br>
+                <input type="checkbox" id="Kanata" name="Kanata" value="Kanata">
+                <label for="Kanata">Kanata Konoe</label><br>
+                <input type="checkbox" id="Setsuna" name="Setsuna" value="Setsuna">
+                <label for="Setsuna">Setsuna Yuki</label><br>
+                <input type="checkbox" id="Emma" name="Emma" value="Emma">
+                <label for="Emma">Emma Verde</label><br>
+                <input type="checkbox" id="Rina" name="Rina" value="Rina">
+                <label for="Rina">Rina Tennoji</label><br>
+            </div>
+        </div>
+        <input type="checkbox" id="downloadAll" name="downloadAll" value="downloadAll" onchange='cardsVisibility()'>
+        <label for="downloadAll">Download All</label><br>
 	</div><br>
 	<button onclick='zipFile()' id='zippFilee' style='display:none'>Stop Downloading and zip</button>
 	<br><br>
 	<ul id='cards'></ul>
 	<script>
+        document.getElementById('downloadAll').checked = true
 		var cardList = document.getElementById('cards')
 		var counting = document.getElementById('counting')
 		var scanPrc = document.getElementById('scanPrc')
@@ -46,6 +111,15 @@
 				})
 			}
 		})
+        function cardsVisibility() {
+            var cardsDiv = document.getElementById('downloadSelect')
+            var downloadAll = document.getElementById('downloadAll')
+            if (downloadAll.checked) {
+                cardsDiv.style = 'display:none'
+            } else {
+                cardsDiv.style = 'display:block'
+            }
+        }
 		function zipFile() {
 			document.getElementById('zippFilee').style = 'display:none'
 			window.download = false
@@ -204,15 +278,16 @@
 		window.finished = 0
 		for (var t=0; t<chars.length; t++) {
 			cards[chars[t][0]] = [ ]
-			console.log(chars[t][0])
 			if (chars[t][0].substring(0, 8) == 'idolized') {
-				var a = chars[t][0].substring(8, chars[t][0].length)
+				var idolName = chars[t][0].substring(8, chars[t][0].length)
 			} else {
-				var a = chars[t][0]
+				var idolName = chars[t][0]
 			}
-			var groupFolder = zip.folder(chars[t][1])
-			var folder = groupFolder.folder(a)
-			Download(chars[t][0], folder)
+            if (document.getElementById(idolName).checked || document.getElementById("downloadAll").checked) {
+                var groupFolder = zip.folder(chars[t][1])
+                var folder = groupFolder.folder(idolName)
+                Download(chars[t][0], folder)
+            }
 		}
 	}
 	</script>
