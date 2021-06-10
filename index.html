@@ -10,14 +10,7 @@
 	<p id='counting'></p>
 	<br>
 	<p id='scanPrc'></p>
-	<br>
-	<div id='settings'>
-		<p>Start at </p><input id="startAt" type='number' value='0'>
-		<p>End At</p><input id="totalCards" type='number' value='2817'><br><br>
-		<input type="checkbox" id="developer" name="developer" value="developer">
-		<label for="developer">Developer Mode</label><br>
-		<input type="checkbox" id="deepScan" name="deepScan" value="deepScan">
-		<label for="deepScan">Don't use list of known cards (Not recommended)</label><br>
+    <br><br>
         <div id='downloadSelect' style='display:none'>
             <div id='Muse'>
                 <input type="checkbox" id="Honoka" name="Honoka" value="Honoka">
@@ -82,6 +75,14 @@
         </div>
         <input type="checkbox" id="downloadAll" name="downloadAll" value="downloadAll" onchange='cardsVisibility()'>
         <label for="downloadAll">Download All</label><br>
+	<br>
+	<div id='settings'>
+		<p>Start at </p><input id="startAt" type='number' value='0'>
+		<p>End At</p><input id="totalCards" type='number' value='2817'><br><br>
+		<input type="checkbox" id="developer" name="developer" value="developer">
+		<label for="developer">Developer Mode</label><br>
+		<input type="checkbox" id="deepScan" name="deepScan" value="deepScan">
+		<label for="deepScan">Don't use list of known cards (Not recommended)</label><br>
 	</div><br>
 	<button onclick='zipFile()' id='zippFilee' style='display:none'>Stop Downloading and zip</button>
 	<br><br>
@@ -198,7 +199,7 @@
 						["idolizedShizuku", "Nijigasaki"],
 						["Shizuku", "Nijigasaki"]
 					]
-			// need to add Nijigasaki
+        window.characterAmount = chars.length
 		var m = new JSZip()
 		window.zip = m
 		var cardList = document.getElementById('cards')
@@ -234,8 +235,8 @@
 										checkSend()
 									} else {
 										finished++
-										scanPrc.innerHTML = finished+'/'+chars.length+' downloaded.'
-										if (finished == chars.length) {
+										scanPrc.innerHTML = finished+'/'+characterAmount+' downloaded.'
+										if (finished == characterAmount) {
 											zipFile()
 										}
 									}
@@ -249,8 +250,8 @@
 									checkSend()
 								} else {
 									finished++
-									scanPrc.innerHTML = finished+'/'+chars.length+' downloaded.'
-								if (finished == chars.length) {
+									scanPrc.innerHTML = finished+'/'+characterAmount+' downloaded.'
+								if (finished == characterAmount) {
 									zipFile()
 								}
 								}
@@ -262,8 +263,8 @@
 							checkSend()
 						} else {
 							finished++
-							scanPrc.innerHTML = finished+'/'+chars.length+' downloaded.'
-							if (finished == chars.length) {
+							scanPrc.innerHTML = finished+'/'+characterAmount+' downloaded.'
+							if (finished == characterAmount) {
 								zipFile()
 							}
 						}
@@ -276,6 +277,9 @@
 		window.o = 0
 		window.download = true
 		window.finished = 0
+        if (! document.getElementById("downloadAll").checked) {
+            window.characterAmount = 0
+        }
 		for (var t=0; t<chars.length; t++) {
 			cards[chars[t][0]] = [ ]
 			if (chars[t][0].substring(0, 8) == 'idolized') {
@@ -287,6 +291,9 @@
                 var groupFolder = zip.folder(chars[t][1])
                 var folder = groupFolder.folder(idolName)
                 Download(chars[t][0], folder)
+                if (! document.getElementById("downloadAll").checked) {
+                    characterAmount++
+                }
             }
 		}
 	}
