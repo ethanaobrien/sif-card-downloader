@@ -6,11 +6,14 @@
 </head>
 <body>
 	<button id='buttno' onclick='downloadImages()'>Download</button>
-	<br><br><br>
+	<br>
 	<p id='counting'></p>
 	<br>
 	<p id='scanPrc'></p>
-    <br><br>
+	<br>
+	<div id='settings'>
+        <input type="checkbox" id="downloadAll" name="downloadAll" value="downloadAll" onchange='cardsVisibility()'>
+        <label for="downloadAll">Download All</label><br>
         <div id='downloadSelect' style='display:none'>
             <div id='Muse'>
                 <input type="checkbox" id="Honoka" name="Honoka" value="Honoka">
@@ -73,12 +76,11 @@
                 <label for="Rina">Rina Tennoji</label><br>
             </div>
         </div>
-        <input type="checkbox" id="downloadAll" name="downloadAll" value="downloadAll" onchange='cardsVisibility()'>
-        <label for="downloadAll">Download All</label><br>
-	<br>
-	<div id='settings'>
+        <br><br>
 		<p>Start at </p><input id="startAt" type='number' value='0'>
 		<p>End At</p><input id="totalCards" type='number' value='2817'><br><br>
+        <input type="checkbox" id="downloadZip" name="downloadZip" value="downloadZip">
+        <label for="downloadZip">Download as zip</label><br>
 		<input type="checkbox" id="developer" name="developer" value="developer">
 		<label for="developer">Developer Mode</label><br>
 		<input type="checkbox" id="deepScan" name="deepScan" value="deepScan">
@@ -89,6 +91,7 @@
 	<ul id='cards'></ul>
 	<script>
         document.getElementById('downloadAll').checked = true
+        document.getElementById('downloadZip').checked = true
 		var cardList = document.getElementById('cards')
 		var counting = document.getElementById('counting')
 		var scanPrc = document.getElementById('scanPrc')
@@ -200,14 +203,16 @@
 						["Shizuku", "Nijigasaki"]
 					]
         window.characterAmount = chars.length
-		var m = new JSZip()
-		window.zip = m
+        if (document.getElementById('downloadZip').checked) {
+            var m = new JSZip()
+            window.zip = m
+			document.getElementById('zippFilee').style = 'display:block'
+        }
 		var cardList = document.getElementById('cards')
 		var counting = document.getElementById('counting')
 		var scanPrc = document.getElementById('scanPrc')
 		var title = document.getElementById('title')
 		document.getElementById('settings').style = 'display:none'
-		document.getElementById('zippFilee').style = 'display:block'
 		document.getElementById('buttno').remove()
 		while (document.getElementById('cards').firstChild) {
 			document.getElementById('cards').removeChild(document.getElementById('cards').firstChild);
@@ -229,14 +234,16 @@
 									p.innerHTML = '<a href="'+URL.createObjectURL(blob)+'" target="_blank">'+i+name+'.png</a>'
 									cardList.appendChild(p)
 									cards[name].push(i)
-									t.file(i+name+'.png', blob);
+									if (document.getElementById('downloadZip').checked) {
+										t.file(i+name+'.png', blob);
+									}
 									if (i != totalCards) {
 										i++
 										checkSend()
 									} else {
 										finished++
 										scanPrc.innerHTML = finished+'/'+characterAmount+' downloaded.'
-										if (finished == characterAmount) {
+										if (finished == characterAmount && document.getElementById('downloadZip').checked) {
 											zipFile()
 										}
 									}
@@ -251,9 +258,9 @@
 								} else {
 									finished++
 									scanPrc.innerHTML = finished+'/'+characterAmount+' downloaded.'
-								if (finished == characterAmount) {
-									zipFile()
-								}
+									if (finished == characterAmount && document.getElementById('downloadZip').checked) {
+										zipFile()
+									}
 								}
 							}
 						})
@@ -264,7 +271,7 @@
 						} else {
 							finished++
 							scanPrc.innerHTML = finished+'/'+characterAmount+' downloaded.'
-							if (finished == characterAmount) {
+							if (finished == characterAmount && document.getElementById('downloadZip').checked) {
 								zipFile()
 							}
 						}
@@ -277,6 +284,7 @@
 		window.o = 0
 		window.download = true
 		window.finished = 0
+        var downloadSuccess = false
         if (! document.getElementById("downloadAll").checked) {
             window.characterAmount = 0
         }
@@ -288,14 +296,23 @@
 				var idolName = chars[t][0]
 			}
             if (document.getElementById(idolName).checked || document.getElementById("downloadAll").checked) {
-                var groupFolder = zip.folder(chars[t][1])
-                var folder = groupFolder.folder(idolName)
+                downloadSuccess = true
+				if (document.getElementById('downloadZip').checked)
+					var groupFolder = zip.folder(chars[t][1])
+					var folder = groupFolder.folder(idolName)
+				} else {
+					var folder = false
+				}
                 Download(chars[t][0], folder)
                 if (! document.getElementById("downloadAll").checked) {
                     characterAmount++
                 }
             }
 		}
+        if (!downloadSuccess) {
+            alert('Please select someone to download')
+            window.location.reload
+        }
 	}
 	</script>
 </body>
