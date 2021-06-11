@@ -12,9 +12,11 @@
 	<p id='scanPrc'></p>
 	<br>
 	<div id='settings'>
-        <input type="checkbox" id="downloadAll" name="downloadAll" value="downloadAll" onchange='cardsVisibility()'>
+        <input type="checkbox" id="downloadAll" name="downloadAll" value="downloadAll" onchange='cardsVisibility()' checked>
         <label for="downloadAll">Download All</label><br><br>
         <div id='downloadSelect' style='display:none;'>
+			<input type="checkbox" id="noDownloadOther" name="noDownloadOther" value="noDownloadOther">
+			<label for="noDownloadOther">Download All, except other</label><br><br>
             <div id='Muse' style="float:left; width:25%;">
                 <input type="checkbox" id="Honoka" name="Honoka" value="Honoka">
                 <label for="Honoka">Honoka Kosaka</label><br>
@@ -78,28 +80,49 @@
                 <label for="Rina">Rina Tennoji</label><br>
 				<br>
             </div>
-			<div id='whitespace' style="width:25%;">
+			<div id='whitespace' style="float:left; width:25%;">
+                <input type="checkbox" id="otherIdols" name="otherIdols" value="otherIdols">
+                <label for="otherIdols">Other Idols/Cards</label><br>
 				<br><br><br><br><br><br><br><br><br><br>
 			</div>
         </div>
         <br><br>
 		<p>Start at </p><input id="startAt" type='number' value='0'>
 		<p>End At</p><input id="totalCards" type='number' value='2817'><br><br>
-        <input type="checkbox" id="downloadZip" name="downloadZip" value="downloadZip">
-        <label for="downloadZip">Download as zip</label><br>
-		<input type="checkbox" id="developer" name="developer" value="developer">
+        <input type="checkbox" id="displayLinks" name="displayLinks" value="displayLinks" checked>
+        <label for="displayLinks">Display filenames/links while downloading</label><br><br>
+        <input type="checkbox" id="downloadZip" name="downloadZip" value="downloadZip" checked>
+        <label for="downloadZip">Download as zip</label><br><br>
+		<p>Zip Filename</p>
+		<input type='text' value='Anime Cards' id='zipFilename'>
+		<br><br><br>
+		<input type="checkbox" id="developer" name="developer" value="developer" onchange='developerVisibility()'>
 		<label for="developer">Developer Mode</label><br>
-		<input type="checkbox" id="deepScan" name="deepScan" value="deepScan">
-		<label for="deepScan">Don't use list of known cards (Not recommended)</label><br>
+		<div id='developerMode' style='display:none;'>
+			<ul>
+			<p>Developer Mode May break auto zip. You may need to manually click the zip button when completed</p>
+			<input type="checkbox" id="deepScan" name="deepScan" value="deepScan">
+			<label for="deepScan">Don't use list of known cards (Not recommended)</label><br>
+			<input type="checkbox" id="onlyDownloadUnknown" name="onlyDownloadUnknown" value="onlyDownloadUnknown">
+			<label for="onlyDownloadUnknown">Only download unknown cards</label><br>
+			<br>
+			<p id='customCardMessage'>Input custom Card list (For updating knownCards.json)</p>
+			<input id='customCardsList' type='file' onchange='customCardList()'>
+			</ul>
+		</div>
+		<br>
+		<input type="checkbox" id="non-idolized" name="non-idolized" value="non-idolized" checked>
+		<label for="non-idolized">Non Idolized</label><br>
+		<input type="checkbox" id="idolized" name="idolized" value="idolized" checked>
+		<label for="idolized">Idolized</label><br>
 		<br>
 		<p>To View More Card Details, Visit <a href='https://schoolido.lu/cards/' target="_blank">schoolidol.lu/cards/</a></p>
 	</div><br>
 	<button onclick='zipFile()' id='zippFilee' style='display:none'>Stop Downloading and zip</button>
+	<button onclick='stopDownload()' id='stoppDownload' style='display:none'>Stop Downloading</button>
 	<br><br>
 	<ul id='cards'></ul>
 	<script>
-        document.getElementById('downloadAll').checked = true
-        document.getElementById('downloadZip').checked = true
 		var cardList = document.getElementById('cards')
 		var counting = document.getElementById('counting')
 		var scanPrc = document.getElementById('scanPrc')
@@ -121,17 +144,84 @@
 					}
 					reader.readAsText(blob)
 				})
+			} else {
+				var p = document.createElement('h1')
+				p.innerHTML = 'Failed to fetch knownCards.json'
+				cardList.appendChild(p)
+				document.getElementById('settings').style = 'display:none'
+				document.getElementById('buttno').remove()
 			}
 		})
+		fetch('idols.json').then( function(response) {
+			if (response.status == 200) {
+				response.blob().then( function(blob){
+					var reader = new FileReader()
+					reader.onload = function(e) {
+						try {
+							window.chars = JSON.parse(e.target.result)
+						} catch(e) {
+							var p = document.createElement('h1')
+							p.innerHTML = 'Json Parse Error of Idols list'
+							cardList.appendChild(p)
+							document.getElementById('settings').style = 'display:none'
+							document.getElementById('buttno').remove()
+						}
+					}
+					reader.readAsText(blob)
+				})
+			} else {
+				var p = document.createElement('h1')
+				p.innerHTML = 'Failed to fetch idols.json'
+				cardList.appendChild(p)
+				document.getElementById('settings').style = 'display:none'
+				document.getElementById('buttno').remove()
+			}
+		})
+		function customCardList() {
+			var file = document.getElementById('customCardsList').files[0]
+			var reader = new FileReader()
+			reader.onload = function(e){
+				try {
+					var data = JSON.parse(e.target.result)
+				} catch(e) {
+					alert('File is not a json array')
+					return
+				}
+				window.cards = data
+				document.getElementById('customCardsList').remove()
+				document.getElementById('customCardMessage').remove()
+				alert('Successfully set cards list')
+			}
+			reader.readAsText(file)
+		}
+        function developerVisibility() {
+            var div = document.getElementById('developerMode')
+            var check = document.getElementById('developer').checked
+            if (check) {
+                div.style = 'display:block;'
+            } else {
+                div.style = 'display:none;'
+            }
+        }
         function cardsVisibility() {
             var cardsDiv = document.getElementById('downloadSelect')
-            var downloadAll = document.getElementById('downloadAll')
-            if (downloadAll.checked) {
+            var downloadAll = document.getElementById('downloadAll').checked
+            if (downloadAll) {
                 cardsDiv.style = 'display:none;'
             } else {
                 cardsDiv.style = 'display:block; width:100%'
             }
         }
+		function stopDownload() {
+			document.getElementById('zippFilee').style = 'display:none'
+			window.download = false
+			if (document.getElementById('developer').checked) {
+				var p = document.createElement('li')
+				var blob = new Blob([JSON.stringify(cards)], {type : 'application/json'})
+				p.innerHTML = '<a href="'+URL.createObjectURL(blob)+'" target="_blank">card list</a>'
+				cardList.appendChild(p)
+			}
+		}
 		function zipFile() {
 			document.getElementById('zippFilee').style = 'display:none'
 			window.download = false
@@ -145,77 +235,39 @@
 			zip.generateAsync({type:"blob"}, function updateCallback(metadata) {
 				scanPrc.innerHTML = "Zipping File: " + metadata.percent.toFixed(2) + " %"
 			}).then(function(content) {
-				saveAs(content, "Anime Cards.zip")
+				var name = document.getElementById('zipFilename').value
+				saveAs(content, name+".zip")
 				scanPrc.innerHTML = 'zip file downloaded'
 			})
 		}
 	function downloadImages() {
+		if (! document.getElementById('zipFilename').value || document.getElementById('zipFilename').value.replace(' ', '') == '') {
+			alert('Please input zip filename')
+			window.location.reload()
+		}
+		if (! chars || ! knownCards) {
+			var p = document.createElement('h1')
+			p.innerHTML = 'Missing knownCards or Idol character list'
+			cardList.appendChild(p)
+			document.getElementById('settings').style = 'display:none'
+			document.getElementById('buttno').remove()
+			
+		}
+		if (document.getElementById('downloadAll').checked) {
+			document.getElementById('noDownloadOther').checked = false
+		}
 		var totalCards = 2817
 		if (document.getElementById('totalCards').value && document.getElementById('totalCards').value != '') {
 			var totalCards = document.getElementById('totalCards').value
 		}
-		window.chars = [
-						["idolizedEli", "Muse"],
-						["Eli", "Muse"],
-						["idolizedHanayo", "Muse"],
-						["Hanayo", "Muse"],
-						["idolizedHonoka", "Muse"],
-						["Honoka", "Muse"],
-						["idolizedKotori", "Muse"],
-						["Kotori", "Muse"],
-						["idolizedMaki", "Muse"],
-						["Maki", "Muse"],
-						["idolizedNico", "Muse"],
-						["Nico", "Muse"],
-						["idolizedNozomi", "Muse"],
-						["Nozomi", "Muse"],
-						["idolizedRin", "Muse"],
-						["Rin", "Muse"],
-						["idolizedUmi", "Muse"],
-						["Umi", "Muse"],
-						["idolizedChika", "Aqours"],
-						["Chika", "Aqours"],
-						["idolizedHanamaru", "Aqours"],
-						["Hanamaru", "Aqours"],
-						["idolizedDia", "Aqours"],
-						["Dia", "Aqours"],
-						["idolizedKanan", "Aqours"],
-						["Kanan", "Aqours"],
-						["idolizedMari", "Aqours"],
-						["Mari", "Aqours"],
-						["idolizedRiko", "Aqours"],
-						["Riko", "Aqours"],
-						["idolizedRuby", "Aqours"],
-						["Ruby", "Aqours"],
-						["idolizedYoshiko", "Aqours"],
-						["Yoshiko", "Aqours"],
-						["idolizedYou", "Aqours"],
-						["You", "Aqours"],
-						["idolizedAi", "Nijigasaki"],
-						["Ai", "Nijigasaki"],
-						["idolizedAyumu", "Nijigasaki"],
-						["Ayumu", "Nijigasaki"],
-						["idolizedEmma", "Nijigasaki"],
-						["Emma", "Nijigasaki"],
-						["idolizedKanata", "Nijigasaki"],
-						["Kanata", "Nijigasaki"],
-						["idolizedKarin", "Nijigasaki"],
-						["Karin", "Nijigasaki"],
-						["idolizedKasumi", "Nijigasaki"],
-						["Kasumi", "Nijigasaki"],
-						["idolizedRina", "Nijigasaki"],
-						["Rina", "Nijigasaki"],
-						["idolizedSetsuna", "Nijigasaki"],
-						["Setsuna", "Nijigasaki"],
-						["idolizedShizuku", "Nijigasaki"],
-						["Shizuku", "Nijigasaki"]
-					]
         window.characterAmount = chars.length
         if (document.getElementById('downloadZip').checked) {
             var m = new JSZip()
             window.zip = m
 			document.getElementById('zippFilee').style = 'display:block'
-        }
+        } else {
+			document.getElementById('stoppDownload').style = 'display:block'
+		}
 		var cardList = document.getElementById('cards')
 		var counting = document.getElementById('counting')
 		var scanPrc = document.getElementById('scanPrc')
@@ -230,18 +282,39 @@
 				if (document.getElementById('startAt').value) {
 					var i = document.getElementById('startAt').value
 				}
+				if (! knownCards[name]) {
+					knownCards[name] = [ ]
+				}
 				function checkSend() {
 					if (! download) {
 						return
 					}
 					if (knownCards[name].includes(i) || document.getElementById('deepScan').checked) {
+						if (knownCards[name].includes(i) && document.getElementById('onlyDownloadUnknown').checked) {
+							if (i != totalCards) {
+								i++
+								checkSend()
+								return
+							} else {
+								window.finished++
+								scanPrc.innerHTML = finished+'/'+characterAmount+' idols downloaded.'
+								if (finished == characterAmount && document.getElementById('downloadZip').checked) {
+									zipFile()
+								}
+								return
+							}
+						}
 						fetch('https://i.schoolido.lu/c/'+i+name+'.png').then(response => {
 							if (response.status == 200) {
 								response.blob().then(blob => {
-									var p = document.createElement('li')
-									p.innerHTML = '<a href="'+URL.createObjectURL(blob)+'" target="_blank">'+i+name+'.png</a>'
-									cardList.appendChild(p)
-									cards[name].push(i)
+									if (document.getElementById('displayLinks').checked) {
+										var p = document.createElement('li')
+										p.innerHTML = '<a href="'+URL.createObjectURL(blob)+'" target="_blank">'+i+name+'.png</a>'
+										cardList.appendChild(p)
+									}
+									if (! cards[name].includes(i)) {
+										cards[name].push(i)
+									}
 									if (document.getElementById('downloadZip').checked) {
 										t.file(i+name+'.png', blob);
 									}
@@ -249,8 +322,8 @@
 										i++
 										checkSend()
 									} else {
-										finished++
-										scanPrc.innerHTML = finished+'/'+characterAmount+' downloaded.'
+										window.finished++
+										scanPrc.innerHTML = finished+'/'+characterAmount+' idols downloaded.'
 										if (finished == characterAmount && document.getElementById('downloadZip').checked) {
 											zipFile()
 										}
@@ -264,8 +337,8 @@
 									i++
 									checkSend()
 								} else {
-									finished++
-									scanPrc.innerHTML = finished+'/'+characterAmount+' downloaded.'
+									window.finished++
+									scanPrc.innerHTML = finished+'/'+characterAmount+' idols downloaded.'
 									if (finished == characterAmount && document.getElementById('downloadZip').checked) {
 										zipFile()
 									}
@@ -277,8 +350,8 @@
 							i++
 							checkSend()
 						} else {
-							finished++
-							scanPrc.innerHTML = finished+'/'+characterAmount+' downloaded.'
+							window.finished++
+							scanPrc.innerHTML = finished+'/'+characterAmount+' idols downloaded.'
 							if (finished == characterAmount && document.getElementById('downloadZip').checked) {
 								zipFile()
 							}
@@ -288,7 +361,9 @@
 				i++
 				checkSend()
 		}
-		window.cards = { }
+		if (! cards) {
+			window.cards = { }
+		}
 		window.o = 0
 		window.download = true
 		window.finished = 0
@@ -297,49 +372,78 @@
             window.characterAmount = 0
         }
 		for (var t=0; t<chars.length; t++) {
-			cards[chars[t][0]] = [ ]
+			if (! cards[chars[t][0]]) {
+				cards[chars[t][0]] = [ ]
+			}
+			var download = false
 			if (chars[t][0].substring(0, 8) == 'idolized') {
 				var idolName = chars[t][0].substring(8, chars[t][0].length)
+				if (document.getElementById('idolized').checked) {
+					var download = true
+				}
 			} else {
 				var idolName = chars[t][0]
+				if (document.getElementById('non-idolized').checked) {
+					var download = true
+				}
 			}
-            if (document.getElementById(idolName).checked || document.getElementById("downloadAll").checked) {
-                downloadSuccess = true
+			if (document.getElementById(idolName) && download) {
+				if (document.getElementById(idolName).checked || document.getElementById("downloadAll").checked || document.getElementById("noDownloadOther").checked) {
+					downloadSuccess = true
+					if (document.getElementById('downloadZip').checked) {
+						var groupFolder = zip.folder(chars[t][1])
+						var folder = groupFolder.folder(idolName)
+					} else {
+						var folder = false
+					}
+					Download(chars[t][0], folder)
+					if (! document.getElementById("downloadAll").checked) {
+						characterAmount++
+					}
+				}
+			} else if ((document.getElementById("otherIdols").checked || document.getElementById("downloadAll").checked) && ! document.getElementById("noDownloadOther").checked && download) {
+				downloadSuccess = true
 				if (document.getElementById('downloadZip').checked) {
 					var groupFolder = zip.folder(chars[t][1])
 					var folder = groupFolder.folder(idolName)
 				} else {
 					var folder = false
 				}
-                Download(chars[t][0], folder)
-                if (! document.getElementById("downloadAll").checked) {
-                    characterAmount++
-                }
-            }
+				Download(chars[t][0], folder)
+				if (! document.getElementById("downloadAll").checked) {
+					characterAmount++
+				}
+			}
 		}
         if (!downloadSuccess) {
             alert('Please select someone to download')
-            window.location.reload
+            window.location.reload()
         }
+		counting.innerHTML = 'Amount Downloaded: 0'
+		title.innerHTML = 'Amount Downloaded: 0'
+		scanPrc.innerHTML = '0/'+characterAmount+' idols downloaded.'
 	}
 	function setscreensize() {
 		var width = window.innerWidth
 		var height = window.innerHeight
-		if (width < 550) {
+		if (width < 700) {
 			var style = ''
 			document.getElementById('Nijigasaki').style = style
 			document.getElementById('Muse').style = style
 			document.getElementById('Aqours').style = style
-			document.getElementById('whitespace').style = 'display:none'
+			document.getElementById('whitespace').style = style
 		} else {
 			var style = 'float:left; width:25%;'
 			document.getElementById('Nijigasaki').style = style
 			document.getElementById('Muse').style = style
 			document.getElementById('Aqours').style = style
-			document.getElementById('whitespace').style = 'display:block; width:25%;'
+			document.getElementById('whitespace').style = style
 		}
 	}
-	window.onload = setscreensize()
+	window.onload = function() {
+		setscreensize()
+		cardsVisibility()
+	}
 	window.onresize = setscreensize
 	</script>
 </body>
