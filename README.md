@@ -10,4 +10,4 @@ You can click on the links as it is downloading to preview images
 
 ## To Do
 
-I honestly dont know. Please make suggestions.
+Other than UI enhancements, I honestly dont know. Please make suggestions.
