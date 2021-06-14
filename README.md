@@ -12,6 +12,8 @@ You can click on the links as it is downloading to preview images
 
 Other than UI enhancements, I honestly dont know. Please make suggestions.
 
+I was going to convert this to react. But I do not have time.
+
 # What you can do with this code
 
 This is open source, you can do whatever you would like UNDER ONE CONDITION! If you re-distribute this code you MUST give me some credit!
