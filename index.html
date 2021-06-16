@@ -106,8 +106,10 @@
 			<input type="checkbox" id="onlyDownloadUnknown" name="onlyDownloadUnknown" value="onlyDownloadUnknown">
 			<label for="onlyDownloadUnknown">Only download unknown cards</label><br>
 			<br>
-			<p id='customCardMessage'>Input custom Card list (For updating knownCards.json)</p>
-			<input id='customCardsList' type='file' onchange='customCardList()'>
+			<p id='customCardMessage'>custom card list (to build onto)</p>
+			<input id='customCardsList' type='file' onchange='customCardList()'><br>
+			<p id='cardsToScanMessage'>Custom Card list (to scan)</p>
+			<input id='cardsToScan' type='file' onchange='cardsToScanList()'>
 			</ul>
 		</div>
 		<br>
@@ -187,9 +189,26 @@
 					alert('File is not a json array')
 					return
 				}
-				window.cards = data
+				window.knownCards = data
 				document.getElementById('customCardsList').remove()
 				document.getElementById('customCardMessage').remove()
+				alert('Successfully set cards list')
+			}
+			reader.readAsText(file)
+		}
+		function cardsToScanList() {
+			var file = document.getElementById('cardsToScan').files[0]
+			var reader = new FileReader()
+			reader.onload = function(e){
+				try {
+					var data = JSON.parse(e.target.result)
+				} catch(e) {
+					alert('File is not a json array')
+					return
+				}
+				window.cards = data
+				document.getElementById('cardsToScanMessage').remove()
+				document.getElementById('cardsToScanList').remove()
 				alert('Successfully set cards list')
 			}
 			reader.readAsText(file)
