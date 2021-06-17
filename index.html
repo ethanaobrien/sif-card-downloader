@@ -88,7 +88,7 @@
         </div>
         <br><br>
 		<p>Start at </p><input id="startAt" type='number' value='0'>
-		<p>End At</p><input id="totalCards" type='number' value='2817'><br><br>
+		<p>End At</p><input id="totalCards" type='number' value='2818'><br><br>
         <input type="checkbox" id="displayLinks" name="displayLinks" value="displayLinks" checked>
         <label for="displayLinks">Display filenames/links while downloading</label><br><br>
         <input type="checkbox" id="downloadZip" name="downloadZip" value="downloadZip" checked>
@@ -105,6 +105,8 @@
 			<label for="deepScan">Don't use list of known cards (Not recommended)</label><br>
 			<input type="checkbox" id="onlyDownloadUnknown" name="onlyDownloadUnknown" value="onlyDownloadUnknown">
 			<label for="onlyDownloadUnknown">Only download unknown cards</label><br>
+			<input type="checkbox" id="findUnknownCards" name="findUnknownCards" value="findUnknownCards">
+			<label for="findUnknownCards">Find unknown cards</label><br>
 			<br>
 			<p id='customCardMessage'>custom card list (to build onto)</p>
 			<input id='customCardsList' type='file' onchange='customCardList()'><br>
@@ -189,9 +191,9 @@
 					alert('File is not a json array')
 					return
 				}
-				window.knownCards = data
-				document.getElementById('customCardsList').remove()
+				window.cards = data
 				document.getElementById('customCardMessage').remove()
+				document.getElementById('customCardsList').remove()
 				alert('Successfully set cards list')
 			}
 			reader.readAsText(file)
@@ -206,9 +208,9 @@
 					alert('File is not a json array')
 					return
 				}
-				window.cards = data
+				window.knownCards = data
 				document.getElementById('cardsToScanMessage').remove()
-				document.getElementById('cardsToScanList').remove()
+				document.getElementById('cardsToScan').remove()
 				alert('Successfully set cards list')
 			}
 			reader.readAsText(file)
@@ -275,7 +277,7 @@
 		if (document.getElementById('downloadAll').checked) {
 			document.getElementById('noDownloadOther').checked = false
 		}
-		var totalCards = 2817
+		window.totalCards = 2818
 		if (document.getElementById('totalCards').value && document.getElementById('totalCards').value != '') {
 			var totalCards = document.getElementById('totalCards').value
 		}
@@ -381,15 +383,77 @@
 				checkSend()
 		}
 		if (! cards) {
-			window.cards = { }
+			window.cards = knownCards
 		}
 		window.o = 0
 		window.download = true
 		window.finished = 0
-        var downloadSuccess = false
-        if (! document.getElementById("downloadAll").checked) {
-            window.characterAmount = 0
-        }
+		var downloadSuccess = false
+		if (! document.getElementById("downloadAll").checked) {
+		    window.characterAmount = 0
+		}
+		if (document.getElementById("findUnknownCards").checked) {
+			window.cards = { }
+			cards.idolized = [ ] 
+			cards.nonidolized = [ ]
+			for (var t=0; t<chars.length; t++) {
+				if (chars[t][0].substring(0, 8) == 'idolized') {
+					var name = chars[t][0]
+					for (var y=0; y<totalCards; y++) {
+						if (knownCards[name].includes(y)) {
+							cards.idolized.push(y)
+						}
+					}
+					
+				} else {
+					var name = chars[t][0]
+					for (var y=0; y<totalCards; y++) {
+						if (knownCards[name].includes(y)) {
+							cards.nonidolized.push(y)
+						}
+					}
+				}
+				
+			}
+			for (var u=0; u<totalCards; u++) {
+				if (! cards.idolized.includes(u)) {
+					var p = document.createElement('li')
+					p.innerHTML = 'Missing card idolized '+u
+					cardList.appendChild(p)
+				}
+			}
+			for (var u=0; u<totalCards; u++) {
+				if (! cards.nonidolized.includes(u)) {
+					var p = document.createElement('li')
+					p.innerHTML = 'Missing card non-idolized '+u
+					cardList.appendChild(p)
+				}
+			}
+			scanPrc.innerHTML = 'Finished!'
+			var p = document.createElement('li')
+			var m = cards
+			var u = { }
+			for (var t=0; t<chars.length; t++) {
+				u[chars[t][0]] = [ ]
+				if (chars[t][0].substring(0, 8) == 'idolized') {
+					for (var a=0; a<totalCards; a++) {
+						if (! cards.idolized.includes(a)) {
+							u[chars[t][0]].push(a)
+						}
+					}
+				} else {
+					for (var a=0; a<totalCards; a++) {
+						if (! cards.nonidolized.includes(a)) {
+							u[chars[t][0]].push(a)
+						}
+					}
+				}
+			}
+			var blob = new Blob([JSON.stringify(u)], {type : 'application/json'})
+			p.innerHTML = '<a href="'+URL.createObjectURL(blob)+'" target="_blank">Missing card list</a>'
+			cardList.appendChild(p)
+			return
+		}
 		for (var t=0; t<chars.length; t++) {
 			if (! cards[chars[t][0]]) {
 				cards[chars[t][0]] = [ ]
