@@ -327,7 +327,12 @@
 								return
 							}
 						}
-						fetch('https://i.schoolido.lu/c/'+i+name+'.png').then(response => {
+						if (name == 'Transparent') {
+							var cardLocation = 'https://i.schoolido.lu/cards/transparent/'+i+name+'.png'
+						} else {
+							var cardLocation = 'https://i.schoolido.lu/c/'+i+name+'.png'
+						}
+						fetch(cardLocation).then(response => {
 							if (response.status == 200) {
 								response.blob().then(blob => {
 									if (document.getElementById('displayLinks').checked) {
