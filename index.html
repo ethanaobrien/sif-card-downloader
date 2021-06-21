@@ -534,6 +534,15 @@
 		setscreensize()
 		cardsVisibility()
 	}
+	window.addEventListener('beforeunload', function (e) {
+		if (window.download) {
+			e.preventDefault() 
+			e.returnValue = ''
+			return ''
+		} else {
+			return
+		}
+	})
 	window.onresize = setscreensize
 	</script>
 </body>
