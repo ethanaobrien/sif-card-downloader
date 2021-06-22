@@ -93,6 +93,9 @@
 		<p>End At</p><input id="totalCards" type='number' value='2824'><br><br>
         <input type="checkbox" id="displayLinks" name="displayLinks" value="displayLinks" checked>
         <label for="displayLinks">Display filenames/links while downloading</label><br><br>
+        <input type="checkbox" id="convertFiles" name="convertFiles" value="convertFiles" onchange='convertVisibility()'>
+        <label for="convertFiles">Convert files from png to jpg (cpu and memory may increase)</label><br><br>
+		<div id='jpgsettings' style='display:none;'><ul><p>Quality. 0 - 100</p><input id="jpgQuality" type='number' value='92'><br><br></ul></div>
         <input type="checkbox" id="downloadZip" name="downloadZip" value="downloadZip" checked>
         <label for="downloadZip">Download as zip</label><br><br>
 		<p>Zip Filename</p>
@@ -235,6 +238,15 @@
                 cardsDiv.style = 'display:block; width:100%'
             }
         }
+        function convertVisibility() {
+            var a = document.getElementById('jpgsettings')
+            var b = document.getElementById('convertFiles').checked
+            if (b) {
+                a.style = 'display:block;'
+            } else {
+                a.style = 'display:none;'
+            }
+        }
 		function stopDownload() {
 			document.getElementById('zippFilee').style = 'display:none'
 			window.download = false
@@ -308,6 +320,23 @@
 				if (! knownCards[name]) {
 					knownCards[name] = [ ]
 				}
+				function convertImg(blob, callback) {
+					var image = document.createElement('img')
+					image.src = URL.createObjectURL(blob)
+					image.onload = function() {
+						var canvas = document.createElement('canvas')
+						canvas.width = image.width
+						canvas.height = image.height
+						canvas.getContext("2d").drawImage(image, 0, 0)
+						var quality = document.getElementById('jpgQuality').value
+						if (quality.value != '') {
+							var quality = quality.value / 100
+						} else {
+							var quality = '0.92'
+						}
+						canvas.toBlob(callback, 'image/jpeg', quality)
+					}
+				}
 				function checkSend() {
 					if (! download) {
 						return
@@ -335,26 +364,49 @@
 						fetch(cardLocation).then(response => {
 							if (response.status == 200) {
 								response.blob().then(blob => {
-									if (document.getElementById('displayLinks').checked) {
-										var p = document.createElement('li')
-										p.innerHTML = '<a href="'+URL.createObjectURL(blob)+'" target="_blank">'+i+name+'.png</a>'
-										cardList.appendChild(p)
-									}
 									if (! cards[name].includes(i)) {
 										cards[name].push(i)
 									}
-									if (document.getElementById('downloadZip').checked) {
-										t.file(i+name+'.png', blob);
-									}
-									if (i != totalCards) {
-										i++
-										checkSend()
-									} else {
-										window.finished++
-										scanPrc.innerHTML = finished+'/'+characterAmount+' idols downloaded.'
-										if (finished == characterAmount && document.getElementById('downloadZip').checked) {
-											zipFile()
+									if (! document.getElementById('convertFiles').checked) {
+										if (document.getElementById('displayLinks').checked) {
+											var p = document.createElement('li')
+											p.innerHTML = '<a href="'+URL.createObjectURL(blob)+'" target="_blank">'+i+name+'.png</a>'
+											cardList.appendChild(p)
 										}
+										if (document.getElementById('downloadZip').checked) {
+											t.file(i+name+'.png', blob);
+										}
+										if (i != totalCards) {
+											i++
+											checkSend()
+										} else {
+											window.finished++
+											scanPrc.innerHTML = finished+'/'+characterAmount+' idols downloaded.'
+											if (finished == characterAmount && document.getElementById('downloadZip').checked) {
+												zipFile()
+											}
+										}
+									} else {
+										convertImg(blob, function(blob) {
+											if (document.getElementById('displayLinks').checked) {
+												var p = document.createElement('li')
+												p.innerHTML = '<a href="'+URL.createObjectURL(blob)+'" target="_blank">'+i+name+'.jpg</a>'
+												cardList.appendChild(p)
+											}
+											if (document.getElementById('downloadZip').checked) {
+												t.file(i+name+'.jpg', blob);
+											}
+											if (i != totalCards) {
+												i++
+												checkSend()
+											} else {
+												window.finished++
+												scanPrc.innerHTML = finished+'/'+characterAmount+' idols downloaded.'
+												if (finished == characterAmount && document.getElementById('downloadZip').checked) {
+													zipFile()
+												}
+											}	
+										})
 									}
 								})
 								o++
