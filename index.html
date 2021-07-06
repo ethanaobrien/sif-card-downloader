@@ -83,14 +83,14 @@
             <div id='whitespace' style="float:left; width:25%;">
                 <input type="checkbox" id="otherIdols" name="otherIdols" value="otherIdols">
                 <label for="otherIdols">Other Idols/Cards</label><br>
-        <input type="checkbox" id="Transparent" name="Transparent" value="Transparent">
-                <label for="Transparent">Transparent Cards</label><br>
-                <br><br><br><br><br><br><br><br><br>
+                <br><br><br><br><br><br><br><br><br><br>
             </div>
         </div>
+        <input type="checkbox" id="Transparent" name="Transparent" value="Transparent">
+        <label for="Transparent">Transparent Cards</label><br>
         <br><br>
         <p>Start at </p><input id="startAt" type='number' value='0'>
-        <p>End At</p><input id="totalCards" type='number' value='2824'><br><br>
+        <p>End At</p><input id="totalCards" type='number' value='2839'><br><br>
         <input type="checkbox" id="displayLinks" name="displayLinks" value="displayLinks" checked>
         <label for="displayLinks">Display filenames/links while downloading</label><br><br>
         <input type="checkbox" id="convertFiles" name="convertFiles" value="convertFiles" onchange='convertVisibility()'>
@@ -248,7 +248,7 @@
             }
         }
         function stopDownload() {
-            document.getElementById('zippFilee').style = 'display:none'
+            document.getElementById('stoppDownload').style = 'display:none'
             window.download = false
             if (document.getElementById('developer').checked) {
                 var p = document.createElement('li')
@@ -259,7 +259,6 @@
         }
         function zipFile() {
             document.getElementById('zippFilee').style = 'display:none'
-            window.download = false
             if (document.getElementById('developer').checked) {
                 var p = document.createElement('li')
                 var blob = new Blob([JSON.stringify(cards, null, 2)], {type : 'application/json'})
@@ -273,6 +272,7 @@
                 var name = document.getElementById('zipFilename').value
                 saveAs(content, name+".zip")
                 scanPrc.innerHTML = 'zip file downloaded'
+                window.download = false
             })
         }
     function downloadImages() {
@@ -291,7 +291,7 @@
         if (document.getElementById('downloadAll').checked) {
             document.getElementById('noDownloadOther').checked = false
         }
-        window.totalCards = 2824
+        window.totalCards = 2839
         if (document.getElementById('totalCards').value && document.getElementById('totalCards').value != '') {
             var totalCards = document.getElementById('totalCards').value
         }
@@ -312,7 +312,7 @@
         while (document.getElementById('cards').firstChild) {
             document.getElementById('cards').removeChild(document.getElementById('cards').firstChild);
         }
-        function Download(name, t) {
+        function startDownload(name, t) {
                 var i=0
                 if (document.getElementById('startAt').value) {
                     var i = document.getElementById('startAt').value
@@ -338,7 +338,7 @@
                     }
                 }
                 function checkSend() {
-                    if (! download) {
+                    if (! window.download) {
                         return
                     }
                     if (knownCards[name].includes(i) || document.getElementById('deepScan').checked) {
@@ -431,12 +431,10 @@
             window.cards = knownCards
         }
         window.o = 0
-        window.download = true
         window.finished = 0
+        window.download = true
         var downloadSuccess = false
-        if (! document.getElementById("downloadAll").checked) {
-            window.characterAmount = 0
-        }
+        window.characterAmount = 0
         if (document.getElementById("findUnknownCards").checked || document.getElementById('onlyDownloadUnknown').checked) {
             window.cards = { }
             cards.idolized = [ ] 
@@ -508,20 +506,25 @@
             if (! cards[chars[t][0]]) {
                 cards[chars[t][0]] = [ ]
             }
-            var download = false
+            var toDownload = false
             if (chars[t][0].substring(0, 8) == 'idolized') {
                 var idolName = chars[t][0].substring(8, chars[t][0].length)
                 if (document.getElementById('idolized').checked) {
-                    var download = true
+                    var toDownload = true
                 }
             } else {
                 var idolName = chars[t][0]
                 if (document.getElementById('non-idolized').checked) {
-                    var download = true
+                    var toDownload = true
                 }
             }
-            if (document.getElementById(idolName) && download) {
+            if (document.getElementById(idolName) && toDownload) {
                 if (document.getElementById(idolName).checked || document.getElementById("downloadAll").checked || document.getElementById("noDownloadOther").checked) {
+                    if (idolName == 'Transparent') {
+                        if (! document.getElementById(idolName).checked) {
+                            return
+                        }
+                    }
                     downloadSuccess = true
                     if (document.getElementById('downloadZip').checked) {
                         var groupFolder = zip.folder(chars[t][1])
@@ -529,12 +532,10 @@
                     } else {
                         var folder = false
                     }
-                    Download(chars[t][0], folder)
-                    if (! document.getElementById("downloadAll").checked) {
-                        characterAmount++
-                    }
+                    startDownload(chars[t][0], folder)
+                    characterAmount++
                 }
-            } else if ((document.getElementById("otherIdols").checked || document.getElementById("downloadAll").checked) && ! document.getElementById("noDownloadOther").checked && download) {
+            } else if ((document.getElementById("otherIdols").checked || document.getElementById("downloadAll").checked) && ! document.getElementById("noDownloadOther").checked && toDownload) {
                 downloadSuccess = true
                 if (document.getElementById('downloadZip').checked) {
                     var groupFolder = zip.folder(chars[t][1])
@@ -542,15 +543,15 @@
                 } else {
                     var folder = false
                 }
-                Download(chars[t][0], folder)
-                if (! document.getElementById("downloadAll").checked) {
-                    characterAmount++
-                }
+                startDownload(chars[t][0], folder)
+                characterAmount++
             }
         }
         if (!downloadSuccess) {
             alert('Please select someone to download')
+            window.download = false
             window.location.reload()
+            return
         }
         counting.innerHTML = 'Amount Downloaded: 0'
         title.innerHTML = 'Amount Downloaded: 0'
