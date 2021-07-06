@@ -522,27 +522,27 @@
                 if (document.getElementById(idolName).checked || document.getElementById("downloadAll").checked || document.getElementById("noDownloadOther").checked) {
                     if (idolName == 'Transparent') {
                         if (document.getElementById('Transparent').checked) {
-							downloadSuccess = true
-							if (document.getElementById('downloadZip').checked) {
-								var groupFolder = zip.folder(chars[t][1])
-								var folder = groupFolder.folder(idolName)
-							} else {
-								var folder = false
-							}
-							startDownload(chars[t][0], folder)
-							characterAmount++
+                            downloadSuccess = true
+                            if (document.getElementById('downloadZip').checked) {
+                                var groupFolder = zip.folder(chars[t][1])
+                                var folder = groupFolder.folder(idolName)
+                            } else {
+                                var folder = false
+                            }
+                            startDownload(chars[t][0], folder)
+                            characterAmount++
                         }
                     } else {
-						downloadSuccess = true
-						if (document.getElementById('downloadZip').checked) {
-							var groupFolder = zip.folder(chars[t][1])
-							var folder = groupFolder.folder(idolName)
-						} else {
-							var folder = false
-						}
-						startDownload(chars[t][0], folder)
-						characterAmount++
-					}
+                        downloadSuccess = true
+                        if (document.getElementById('downloadZip').checked) {
+                            var groupFolder = zip.folder(chars[t][1])
+                            var folder = groupFolder.folder(idolName)
+                        } else {
+                            var folder = false
+                        }
+                        startDownload(chars[t][0], folder)
+                        characterAmount++
+                    }
                 }
             } else if ((document.getElementById("otherIdols").checked || document.getElementById("downloadAll").checked) && ! document.getElementById("noDownloadOther").checked && toDownload) {
                 downloadSuccess = true
