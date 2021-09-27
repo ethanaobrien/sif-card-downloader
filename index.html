@@ -90,7 +90,7 @@
         <label for="Transparent">Transparent Cards</label><br>
         <br><br>
         <p>Start at </p><input id="startAt" type='number' value='0'>
-        <p>End At</p><input id="totalCards" type='number' value='2923'><br><br>
+        <p>End At</p><input id="totalCards" type='number' value='2971'><br><br>
         <input type="checkbox" id="displayLinks" name="displayLinks" value="displayLinks" checked>
         <label for="displayLinks">Display filenames/links while downloading</label><br><br>
         <input type="checkbox" id="convertFiles" name="convertFiles" value="convertFiles" onchange='convertVisibility()'>
@@ -262,7 +262,7 @@
             if (document.getElementById('developer').checked) {
                 var p = document.createElement('li')
                 var blob = new Blob([JSON.stringify(cards, null, 2)], {type : 'application/json'})
-                p.innerHTML = '<a href="'+URL.createObjectURL(blob)+'" target="_blank">card list</a>'
+                p.innerHTML = '<a download="knownCards.json" href="'+URL.createObjectURL(blob)+'" target="_blank">card list</a>'
                 cardList.appendChild(p)
             }
             scanPrc.innerHTML = 'Generating Zip'
@@ -286,12 +286,12 @@
             cardList.appendChild(p)
             document.getElementById('settings').style = 'display:none'
             document.getElementById('buttno').remove()
-            
+            return
         }
         if (document.getElementById('downloadAll').checked) {
             document.getElementById('noDownloadOther').checked = false
         }
-        window.totalCards = 2923
+        window.totalCards = 2971
         if (document.getElementById('totalCards').value && document.getElementById('totalCards').value != '') {
             var totalCards = document.getElementById('totalCards').value
         }
@@ -312,15 +312,16 @@
         while (document.getElementById('cards').firstChild) {
             document.getElementById('cards').removeChild(document.getElementById('cards').firstChild);
         }
-        function startDownload(name, t) {
-                var i=0
-                if (document.getElementById('startAt').value) {
-                    var i = document.getElementById('startAt').value
-                }
-                if (! knownCards[name]) {
-                    knownCards[name] = [ ]
-                }
-                function convertImg(blob, callback) {
+        async function startDownload(name, t) {
+            var i=1
+            if (document.getElementById('startAt').value) {
+                var i = document.getElementById('startAt').value
+            }
+            if (! knownCards[name]) {
+                knownCards[name] = [ ]
+            }
+            function convertImg(blob) {
+                return new Promise(function(resolve, reject) {
                     var image = document.createElement('img')
                     image.src = URL.createObjectURL(blob)
                     image.onload = function() {
@@ -329,103 +330,57 @@
                         canvas.height = image.height
                         canvas.getContext("2d").drawImage(image, 0, 0)
                         var quality = document.getElementById('jpgQuality').value
-                        if (quality.value != '') {
+                        if (quality.value.trim() != '') {
                             var quality = quality.value / 100
                         } else {
                             var quality = '0.92'
                         }
-                        canvas.toBlob(callback, 'image/jpeg', quality)
+                        canvas.toBlob(resolve, 'image/jpeg', quality)
                     }
-                }
-                function checkSend() {
-                    if (! window.download) {
-                        return
-                    }
-                    if (knownCards[name].includes(i) || document.getElementById('deepScan').checked) {
-                        if (name == 'Transparent' || name == 'idolizedTransparent') {
-                            var cardLocation = 'https://i.schoolido.lu/cards/transparent/'+i+name+'.png'
-                        } else {
-                            var cardLocation = 'https://i.schoolido.lu/c/'+i+name+'.png'
-                        }
-                        fetch(cardLocation).then(response => {
-                            if (response.status == 200) {
-                                response.blob().then(blob => {
-                                    if (! cards[name].includes(i)) {
-                                        cards[name].push(i)
-                                    }
-                                    if (! document.getElementById('convertFiles').checked) {
-                                        if (document.getElementById('displayLinks').checked) {
-                                            var p = document.createElement('li')
-                                            p.innerHTML = '<a href="'+URL.createObjectURL(blob)+'" target="_blank">'+i+name+'.png</a>'
-                                            cardList.appendChild(p)
-                                        }
-                                        if (document.getElementById('downloadZip').checked) {
-                                            t.file(i+name+'.png', blob);
-                                        }
-                                        if (i != totalCards) {
-                                            i++
-                                            checkSend()
-                                        } else {
-                                            window.finished++
-                                            scanPrc.innerHTML = finished+'/'+characterAmount+' idols downloaded.'
-                                            if (finished == characterAmount && document.getElementById('downloadZip').checked) {
-                                                zipFile()
-                                            }
-                                        }
-                                    } else {
-                                        convertImg(blob, function(blob) {
-                                            if (document.getElementById('displayLinks').checked) {
-                                                var p = document.createElement('li')
-                                                p.innerHTML = '<a href="'+URL.createObjectURL(blob)+'" target="_blank">'+i+name+'.jpg</a>'
-                                                cardList.appendChild(p)
-                                            }
-                                            if (document.getElementById('downloadZip').checked) {
-                                                t.file(i+name+'.jpg', blob);
-                                            }
-                                            if (i != totalCards) {
-                                                i++
-                                                checkSend()
-                                            } else {
-                                                window.finished++
-                                                scanPrc.innerHTML = finished+'/'+characterAmount+' idols downloaded.'
-                                                if (finished == characterAmount && document.getElementById('downloadZip').checked) {
-                                                    zipFile()
-                                                }
-                                            }    
-                                        })
-                                    }
-                                })
-                                o++
-                                counting.innerHTML = 'Amount Downloaded: '+o
-                                title.innerHTML = 'Amount Downloaded: '+o
-                            } else {
-                                if (i != totalCards) {
-                                    i++
-                                    checkSend()
-                                } else {
-                                    window.finished++
-                                    scanPrc.innerHTML = finished+'/'+characterAmount+' idols downloaded.'
-                                    if (finished == characterAmount && document.getElementById('downloadZip').checked) {
-                                        zipFile()
-                                    }
-                                }
-                            }
-                        })
+                })
+            }
+            if (! window.download) {
+                return
+            }
+            for (var i=i; i<totalCards; i++) {
+                if (knownCards[name].includes(i) || document.getElementById('deepScan').checked) {
+                    if (name == 'Transparent' || name == 'idolizedTransparent') {
+                        var cardLocation = 'https://i.schoolido.lu/cards/transparent/'+i+name+'.png'
                     } else {
-                        if (i != totalCards) {
-                            i++
-                            checkSend()
-                        } else {
-                            window.finished++
-                            scanPrc.innerHTML = finished+'/'+characterAmount+' idols downloaded.'
-                            if (finished == characterAmount && document.getElementById('downloadZip').checked) {
-                                zipFile()
+                        var cardLocation = 'https://i.schoolido.lu/c/'+i+name+'.png'
+                    }
+                    try {
+                        var response = await fetch(cardLocation)
+                        if (response.status == 200) {
+                            var blob = await response.blob()
+                            if (! cards[name].includes(i)) {
+                                cards[name].push(i)
                             }
+                            if (document.getElementById('convertFiles').checked) {
+                                var blob = await convertImg(blob)
+                            }
+                            if (document.getElementById('displayLinks').checked) {
+                                var p = document.createElement('li')
+                                p.innerHTML = '<a href="'+URL.createObjectURL(blob)+'" target="_blank">'+i+name+'.png</a>'
+                                cardList.appendChild(p)
+                            }
+                            if (document.getElementById('downloadZip').checked) {
+                                t.file(i+name+'.png', blob);
+                            }
+                            o++
+                            counting.innerHTML = 'Amount Downloaded: '+o
+                            title.innerHTML = 'Amount Downloaded: '+o
                         }
+                    } catch(e) {
+                        console.warn(e)
                     }
                 }
-                i++
-                checkSend()
+            }
+            window.finished++
+            scanPrc.innerHTML = finished+'/'+characterAmount+' idols downloaded.'
+            if (finished == characterAmount && document.getElementById('downloadZip').checked) {
+                zipFile()
+            }
         }
         if (! cards) {
             window.cards = knownCards
@@ -494,7 +449,7 @@
             }
             if (document.getElementById("findUnknownCards").checked) {
                 var blob = new Blob([JSON.stringify(u, null, 2)], {type : 'application/json'})
-                 p.innerHTML = '<a download="knownCards.json" href="'+URL.createObjectURL(blob)+'">Missing card list</a>'
+                 p.innerHTML = '<a download="missingCards.json" href="'+URL.createObjectURL(blob)+'">Missing card list</a>'
                  cardList.appendChild(p)
                  return
             } else {
