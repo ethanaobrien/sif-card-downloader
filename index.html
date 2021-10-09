@@ -361,7 +361,7 @@
                         canvas.width = image.width
                         canvas.height = image.height
                         canvas.getContext("2d").drawImage(image, 0, 0)
-                        var quality = document.getElementById('jpgQuality').value
+                        var quality = document.getElementById('jpgQuality')
                         if (quality.value.trim() != '') {
                             var quality = quality.value / 100
                         } else {
@@ -388,12 +388,14 @@
                             if (! cards[name].includes(i)) {
                                 cards[name].push(i)
                             }
+                            var type = 'png'
                             if (document.getElementById('convertFiles').checked) {
                                 var blob = await convertImg(blob)
+                                var type = 'jpg'
                             }
                             if (document.getElementById('displayLinks').checked) {
                                 var p = document.createElement('li')
-                                p.innerHTML = '<a href="'+URL.createObjectURL(blob)+'" target="_blank">'+i+name+'.png</a>'
+                                p.innerHTML = '<a href="'+URL.createObjectURL(blob)+'" target="_blank">'+i+name+'.' + type + '</a>'
                                 cardList.appendChild(p)
                             }
                             if (document.getElementById('downloadZip').checked) {
