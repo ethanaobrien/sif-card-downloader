@@ -375,6 +375,9 @@
                         }
                         try {
                             var response = await fetch(cardLocation)
+                            if (response.status != 200) {
+                                continue
+                            }
                             var blob = await response.blob()
                             if (! cards[name].includes(i)) {
                                 cards[name].push(i)
