@@ -155,6 +155,7 @@
                 var response = await fetch('knownCards.json')
                 var data = await response.text()
                 window.knownCards = JSON.parse(data)
+                alert('q')
             } catch(e) {
                 console.warn(e)
                 var p = document.createElement('h1')
@@ -170,6 +171,7 @@
                 var response = await fetch('idols.json')
                 var data = await response.text()
                 window.chars = JSON.parse(data)
+                alert('w')
             } catch(e) {
                 console.warn(e)
                 var p = document.createElement('h1')
