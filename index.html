@@ -150,7 +150,7 @@
         var counting = document.getElementById('counting')
         var scanPrc = document.getElementById('scanPrc')
         var title = document.getElementById('title')
-        (async function() {
+        var a = async function() {
             try {
                 var response = await fetch('knownCards.json')
                 var data = await response.text()
@@ -183,7 +183,8 @@
                 document.getElementById('settings').style = 'display:none'
                 document.getElementById('buttno').remove()
             }
-        })();
+            return 'q'
+        }();
         function customCardList() {
             var file = document.getElementById('customCardsList').files[0]
             var reader = new FileReader()
