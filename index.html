@@ -102,7 +102,7 @@
         <label for="Transparent">Transparent Cards</label><br>
         <br><br>
         <p>Start at </p><input id="startAt" type="number" value="0">
-        <p>End At</p><input id="totalCards" type="number" value="2988"><br><br>
+        <p>End At</p><input id="totalCards" type="number" value="3051"><br><br>
         <input type="checkbox" id="displayLinks" name="displayLinks" value="displayLinks" checked>
         <label for="displayLinks">Display filenames/links while downloading</label><br><br>
         <input type="checkbox" id="convertFiles" name="convertFiles" value="convertFiles" onchange="convertVisibility()">
@@ -150,56 +150,38 @@
         var counting = document.getElementById('counting')
         var scanPrc = document.getElementById('scanPrc')
         var title = document.getElementById('title')
-        fetch('knownCards.json').then( function(response) {
-            if (response.status == 200) {
-                response.blob().then( function(blob){
-                    var reader = new FileReader()
-                    reader.onload = function(e) {
-                        try {
-                            window.knownCards = JSON.parse(e.target.result)
-                        } catch(e) {
-                            var p = document.createElement('h1')
-                            p.innerHTML = 'Json Parse Error of cards list'
-                            cardList.appendChild(p)
-                            document.getElementById('settings').style = 'display:none'
-                            document.getElementById('buttno').remove()
-                        }
-                    }
-                    reader.readAsText(blob)
-                })
-            } else {
+        (async function() {
+            try {
+                var response = await fetch('knownCards.json')
+                var data = await response.text()
+                window.knownCards = JSON.parse(data)
+            } catch(e) {
+                console.warn(e)
                 var p = document.createElement('h1')
-                p.innerHTML = 'Failed to fetch knownCards.json'
+                p.innerHTML = 'Error'
+                cardList.appendChild(p)
+                var p = document.createElement('p')
+                p.innerHTML = e.message
                 cardList.appendChild(p)
                 document.getElementById('settings').style = 'display:none'
                 document.getElementById('buttno').remove()
             }
-        })
-        fetch('idols.json').then( function(response) {
-            if (response.status == 200) {
-                response.blob().then( function(blob){
-                    var reader = new FileReader()
-                    reader.onload = function(e) {
-                        try {
-                            window.chars = JSON.parse(e.target.result)
-                        } catch(e) {
-                            var p = document.createElement('h1')
-                            p.innerHTML = 'Json Parse Error of Idols list'
-                            cardList.appendChild(p)
-                            document.getElementById('settings').style = 'display:none'
-                            document.getElementById('buttno').remove()
-                        }
-                    }
-                    reader.readAsText(blob)
-                })
-            } else {
+            try {
+                var response = await fetch('idols.json')
+                var data = await response.text()
+                window.chars = JSON.parse(data)
+            } catch(e) {
+                console.warn(e)
                 var p = document.createElement('h1')
-                p.innerHTML = 'Failed to fetch idols.json'
+                p.innerHTML = 'Error'
+                cardList.appendChild(p)
+                var p = document.createElement('p')
+                p.innerHTML = e.message
                 cardList.appendChild(p)
                 document.getElementById('settings').style = 'display:none'
                 document.getElementById('buttno').remove()
             }
-        })
+        })();
         function customCardList() {
             var file = document.getElementById('customCardsList').files[0]
             var reader = new FileReader()
@@ -302,6 +284,9 @@
                 scanPrc.innerHTML = "Zipping File: " + metadata.percent.toFixed(2) + " %"
             }).then(function(content) {
                 var name = document.getElementById('zipFilename').value
+                if (name.trim() == '') {
+                    name = 'cards.zip'
+                }
                 saveAs(content, name+".zip")
                 scanPrc.innerHTML = 'zip file downloaded'
                 window.download = false
@@ -323,7 +308,7 @@
         if (document.getElementById('downloadAll').checked) {
             document.getElementById('noDownloadOther').checked = false
         }
-        window.totalCards = 2988
+        window.totalCards = 3051
         if (document.getElementById('totalCards').value && document.getElementById('totalCards').value != '') {
             var totalCards = document.getElementById('totalCards').value
         }
@@ -346,7 +331,7 @@
         }
         async function startDownload(name, t) {
             var i=1
-            if (document.getElementById('startAt').value) {
+            if (document.getElementById('startAt').value && document.getElementById('startAt').value > 0) {
                 var i = document.getElementById('startAt').value
             }
             if (! knownCards[name]) {
@@ -361,11 +346,11 @@
                         canvas.width = image.width
                         canvas.height = image.height
                         canvas.getContext("2d").drawImage(image, 0, 0)
-                        var quality = document.getElementById('jpgQuality')
-                        if (quality.value.trim() != '') {
-                            var quality = quality.value / 100
+                        var quality = document.getElementById('jpgQuality').value
+                        if (quality.trim() != '') {
+                            quality = parseInt(quality.value) / 100
                         } else {
-                            var quality = '0.92'
+                            quality = 0.92
                         }
                         canvas.toBlob(resolve, 'image/jpeg', quality)
                     }
@@ -383,28 +368,26 @@
                     }
                     try {
                         var response = await fetch(cardLocation)
-                        if (response.status == 200) {
-                            var blob = await response.blob()
-                            if (! cards[name].includes(i)) {
-                                cards[name].push(i)
-                            }
-                            var type = 'png'
-                            if (document.getElementById('convertFiles').checked) {
-                                var blob = await convertImg(blob)
-                                var type = 'jpg'
-                            }
-                            if (document.getElementById('displayLinks').checked) {
-                                var p = document.createElement('li')
-                                p.innerHTML = '<a href="'+URL.createObjectURL(blob)+'" target="_blank">'+i+name+'.' + type + '</a>'
-                                cardList.appendChild(p)
-                            }
-                            if (document.getElementById('downloadZip').checked) {
-                                t.file(i+name+'.png', blob);
-                            }
-                            o++
-                            counting.innerHTML = 'Amount Downloaded: '+o
-                            title.innerHTML = 'Amount Downloaded: '+o
+                        var blob = await response.blob()
+                        if (! cards[name].includes(i)) {
+                            cards[name].push(i)
                         }
+                        var extension = 'png'
+                        if (document.getElementById('convertFiles').checked) {
+                            blob = await convertImg(blob)
+                            extension = 'jpg'
+                        }
+                        if (document.getElementById('displayLinks').checked) {
+                            var p = document.createElement('li')
+                            p.innerHTML = '<a href="'+URL.createObjectURL(blob)+'" target="_blank">'+i+name+'.' + extension + '</a>'
+                            cardList.appendChild(p)
+                        }
+                        if (document.getElementById('downloadZip').checked) {
+                            t.file(i+name+'.'+extension, blob);
+                        }
+                        o++
+                        counting.innerHTML = 'Amount Downloaded: '+o
+                        title.innerHTML = 'Amount Downloaded: '+o
                     } catch(e) {
                         console.warn(e)
                     }
