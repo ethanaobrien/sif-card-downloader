@@ -155,8 +155,8 @@
                 var response = await fetch('knownCards.json')
                 var data = await response.text()
                 window.knownCards = JSON.parse(data)
-                alert('q')
             } catch(e) {
+                window.downloadCardsListError = true
                 console.warn(e)
                 var p = document.createElement('h1')
                 p.innerHTML = 'Error'
@@ -171,8 +171,8 @@
                 var response = await fetch('idols.json')
                 var data = await response.text()
                 window.chars = JSON.parse(data)
-                alert('w')
             } catch(e) {
+                window.downloadCardsListError = true
                 console.warn(e)
                 var p = document.createElement('h1')
                 p.innerHTML = 'Error'
@@ -296,6 +296,10 @@
             })
         }
         function downloadImages() {
+            if ((! window.chars || ! window.knownCards) && ! window.downloadCardsListError) {
+                alert('Loading resources... Try again in a second')
+                return
+            }
             var cardList = document.getElementById('cards')
             var counting = document.getElementById('counting')
             var scanPrc = document.getElementById('scanPrc')
