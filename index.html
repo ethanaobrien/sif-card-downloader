@@ -293,6 +293,10 @@
             })
         }
         function downloadImages() {
+            var cardList = document.getElementById('cards')
+            var counting = document.getElementById('counting')
+            var scanPrc = document.getElementById('scanPrc')
+            var title = document.getElementById('title')
             if (! document.getElementById('zipFilename').value || document.getElementById('zipFilename').value.replace(' ', '') == '') {
                 alert('Please input zip filename')
                 window.location.reload()
@@ -320,10 +324,6 @@
             } else {
                 document.getElementById('stoppDownload').style = 'display:block'
             }
-            var cardList = document.getElementById('cards')
-            var counting = document.getElementById('counting')
-            var scanPrc = document.getElementById('scanPrc')
-            var title = document.getElementById('title')
             document.getElementById('settings').style = 'display:none'
             document.getElementById('buttno').remove()
             while (document.getElementById('cards').firstChild) {
